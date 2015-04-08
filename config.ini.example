@@ -1,0 +1,19 @@
+[general]
+# Base url for your download mirror
+base_url = http://domain.ltd/
+# Base path where all your different devices/versions reside
+base_path = /path/to/base/of/files
+# Dirs under your base path to be scanned
+scan_dirs = cm-12-unofficial-ace/:cm-12-1-unofficial-ace/
+
+[database]
+# Hostname
+host = 127.0.0.1
+# Port
+port = 3306
+# Username
+user =
+# Password
+passwd =
+# Database
+db =
