@@ -101,31 +101,32 @@ def sync_database(data):
             cur = con.cursor()
 
             # Get existing filenames from database
-            cur.execute("SELECT filename FROM updates")
+            cur.execute("SELECT url FROM updates WHERE mirror_id = %s", (mirror_id,))
             rows = cur.fetchall()
-            old_files = []
+            old_urls = []
 
             for row in rows:
-                old_files.append(row[0])
+                old_urls.append(row[0])
 
             # Insert/update file information to database
             for ota in data:
                 if DEBUG:
                     print("Inserting/updating " + ota["filename"])
-                cur.execute("""INSERT INTO updates (filename, device, incremental, timestamp, md5sum, channel, api_level, url, changes)
-                        VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s) ON DUPLICATE KEY UPDATE
-                        device=VALUES(device), incremental=VALUES(incremental), timestamp=VALUES(timestamp), md5sum=VALUES(md5sum), channel=VALUES(channel),
-                        api_level=VALUES(api_level), url=VALUES(url), changes=VALUES(changes)""",
-                        (ota["filename"], ota["device"], ota["incremental"], ota["timestamp"], ota["md5sum"], ota["channel"], ota["api_level"], ota["url"], ota["changes"]))
+                cur.execute("""INSERT INTO updates (filename, device, incremental, timestamp, md5sum, channel, api_level, url, changes, mirror_id)
+                        VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s) ON DUPLICATE KEY UPDATE
+                        filename=VALUES(filename), device=VALUES(device), incremental=VALUES(incremental), timestamp=VALUES(timestamp), md5sum=VALUES(md5sum),
+                        channel=VALUES(channel), api_level=VALUES(api_level), changes=VALUES(changes), mirror_id=VALUES(mirror_id)""",
+                        (ota["filename"], ota["device"], ota["incremental"], ota["timestamp"], ota["md5sum"], ota["channel"], ota["api_level"], ota["url"],
+                            ota["changes"], mirror_id))
                 # File still exists so remove from to-be-removed list
-                if ota["filename"] in old_files:
-                    old_files.remove(ota["filename"])
+                if ota["url"] in old_urls:
+                    old_urls.remove(ota["url"])
 
             # Clean up old files from database
-            for old_file in old_files:
+            for old_url in old_urls:
                 if DEBUG:
-                    print("Removing " + old_file)
-                cur.execute("DELETE FROM updates WHERE filename = %s", (old_file,))
+                    print("Removing " + old_url)
+                cur.execute("DELETE FROM updates WHERE mirror_id = %s AND url = %s", (mirror_id,old_url))
 
     except mdb.Error, e:
         print("Error %d: %s" % (e.args[0],e.args[1]))
@@ -138,6 +139,7 @@ def sync_database(data):
 # Initialize variables from config file
 config = ConfigParser.ConfigParser()
 config.read('config.ini')
+mirror_id = config.getint('general', 'mirror_id')
 base_url = config.get('general', 'base_url')
 base_path = config.get('general', 'base_path')
 scan_dirs = config.get('general', 'scan_dirs').split(':')

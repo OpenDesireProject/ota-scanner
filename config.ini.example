@@ -1,4 +1,6 @@
 [general]
+# Mirror ID
+mirror_id = 1
 # Base url for your download mirror
 base_url = http://domain.ltd/
 # Base path where all your different devices/versions reside
