@@ -60,7 +60,6 @@ def scan_path(path):
         for file in files:
             if file.endswith(".zip"):
                 found_files.append(os.path.join(root, file))
-                #print(os.path.join(root, file))
     return found_files
 
 # Extract data from build.prop inside zip files
@@ -104,12 +103,10 @@ def sync_database(data):
             # Get existing filenames from database
             cur.execute("SELECT filename FROM updates")
             rows = cur.fetchall()
+            old_files = []
 
-            if len(rows) > 0:
-                old_files = []
-
-                for row in rows:
-                    old_files.append(row[0])
+            for row in rows:
+                old_files.append(row[0])
 
             # Insert/update file information to database
             for ota in data:
@@ -121,15 +118,14 @@ def sync_database(data):
                         api_level=VALUES(api_level), url=VALUES(url), changes=VALUES(changes)""",
                         (ota["filename"], ota["device"], ota["incremental"], ota["timestamp"], ota["md5sum"], ota["channel"], ota["api_level"], ota["url"], ota["changes"]))
                 # File still exists so remove from to-be-removed list
-                if len(rows) > 0:
+                if ota["filename"] in old_files:
                     old_files.remove(ota["filename"])
 
             # Clean up old files from database
-            if len(rows) > 0:
-                for old_file in old_files:
-                    if DEBUG:
-                        print("Removing " + old_file)
-                    cur.execute("DELETE FROM updates WHERE filename = %s", (old_file,))
+            for old_file in old_files:
+                if DEBUG:
+                    print("Removing " + old_file)
+                cur.execute("DELETE FROM updates WHERE filename = %s", (old_file,))
 
     except mdb.Error, e:
         print("Error %d: %s" % (e.args[0],e.args[1]))
