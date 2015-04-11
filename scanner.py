@@ -16,9 +16,6 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-# Changelog:
-# 2015-04-08 -- initial version
-
 from __future__ import print_function
 from fakesechead import FakeSecHead
 import ConfigParser
@@ -100,7 +97,7 @@ def sync_database(data):
         with con:
             cur = con.cursor()
 
-            # Get existing filenames from database
+            # Get existing urls from database for this mirror
             cur.execute("SELECT url FROM updates WHERE mirror_id = %s", (mirror_id,))
             rows = cur.fetchall()
             old_urls = []
