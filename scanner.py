@@ -72,7 +72,12 @@ def extract_data(files):
                 incremental = cp.get('properties', 'ro.build.version.incremental')
                 timestamp = cp.get('properties', 'ro.build.date.utc')
                 md5sum = get_md5(file)
-                channel = cp.get('properties', 'ro.odp.releasetype').lower()
+                try:
+                    channel = cp.get('properties', 'ro.odp.releasetype').lower()
+                except ConfigParser.NoOptionError:
+                    if DEBUG:
+                        print("ro.odp.releasetype property not found... skipping.")
+                    break
                 api_level = cp.get('properties', 'ro.build.version.sdk')
                 url = get_url(file)
                 changes = get_changelog_url(file)
