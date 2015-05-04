@@ -77,7 +77,7 @@ def extract_data(files):
                 except ConfigParser.NoOptionError:
                     if DEBUG:
                         print("ro.odp.releasetype property not found... skipping.")
-                    break
+                    continue
                 api_level = cp.get('properties', 'ro.build.version.sdk')
                 url = get_url(file)
                 changes = get_changelog_url(file)
